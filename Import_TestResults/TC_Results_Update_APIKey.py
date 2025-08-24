@@ -6,7 +6,6 @@ import argparse
 parser = argparse.ArgumentParser(description="Upload test results to TestRail from Excel")
 parser.add_argument("--url", help="TestRail base URL, e.g. https://mycompany.testrail.io")
 parser.add_argument("--username", help="TestRail username/email")
-#parser.add_argument("--password", help="TestRail password (if API key not enabled)")
 parser.add_argument("--api_key", help="TestRail API key for authentication")
 parser.add_argument("--run_id", type=int, help="TestRail Run ID")
 parser.add_argument("--file", help="Path to Excel file containing results")
@@ -22,10 +21,6 @@ testrail_url = testrail_url.rstrip("/")
 username = (args.username or "").strip()
 if not username:
     username = input("👤 Enter TestRail Username/Email: ").strip()
-
-'''password = (args.password or "").strip()
-if not password:
-    password = input("🔑 Enter TestRail Password (visible in PyCharm): ").strip()'''
 
 # ==== API KEY PROMPT ====
 api_key = (args.api_key or "").strip()
@@ -70,8 +65,9 @@ for _, row in df.iterrows():
     else:
         status_id = status_map.get(status_raw)
 
-    if not status_id:
-        print(f"⚠️ Skipping unknown status for case {case_id_raw}: {status_raw}")
+    # 👉 Skip unknown OR untested statuses
+    if not status_id or status_id == status_map['untested']:
+        print(f"⚠️ Skipping case {case_id_raw} with status '{status_raw}'")
         continue
 
     # Add result
